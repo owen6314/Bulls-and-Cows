@@ -4,6 +4,7 @@ import Data.List
 import Data.Monoid
 import Control.Monad.State.Lazy
 import Control.Monad.Writer
+import Text.Printf
 
 valid :: Int -> Bool
 valid n = 100 <= n && n <= 9999 && noDup n where
@@ -16,10 +17,12 @@ type Game = StateT (StdGen, GameState) (WriterT (Sum Int) IO)
 
 eval :: Int -> Int -> (Int, Int)
 eval e x = (appeared, inPosition) where
-  de = show e
-  dx = show x
+  show04 :: Int -> String
+  show04 = printf "%04d"
+  de = show04 e
+  dx = show04 x
   appeared = length $ filter (\d -> d `elem` dx) de
-  inPosition = length $ filter (\(x,y) -> x == y) $ zip (reverse (show e)) (reverse (show x))
+  inPosition = length $ filter (\(x,y) -> x == y) $ zip (reverse de) (reverse dx)
 
 play :: Game ()
 play = do
