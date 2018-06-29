@@ -29,16 +29,16 @@ play = do
   (g, s) <- get
   let (g1, g2) = split g
       (x, s') = guess g1 s
-      (r1, r2) = eval 9527 x
+      (r1, r2) = eval 5431 x
       s'' = refine (x,s') (r1, r2)
   put (g2, s'')
   tell (Sum 1)
   liftIO $ putStrLn $ "you guess " ++ (show x) ++ " -> (" ++ (show r1) ++ ", " ++ (show r2) ++ ")"
-  when (x /= 9527) play
+  when (x /= 5431) play
 
 main :: IO ()
 main = do
-  putStrLn $ "I won't tell you 9527 is the number"
+  putStrLn $ "I won't tell you 5431 is the number"
   let g = mkStdGen 0
       s = initialize valid
   (_, r) <- runWriterT (runStateT play (g, s))
