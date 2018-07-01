@@ -10,11 +10,14 @@ import Text.Printf
 
 type GameState = ([Int], Int)
 type Result = (Int, Int)
+
+-- data type for choosing new guess
 data Candidate = Cand {
     num :: Int, 
     weight :: Double
 }
 
+-- sort by weight
 instance Eq Candidate where
     Cand _ w1 == Cand _ w2 = w1 == w2
 instance Ord Candidate where
@@ -29,17 +32,18 @@ guess g s = (snd s, s)
 refine :: (Int, GameState) -> (Int, Int) -> GameState
 refine (gs, s) (b, c) = (s', findBestGuess s') 
              where s' = [n | n <- fst s, eval n gs == (b, c)]
-
+-- find next one to guess
 findBestGuess :: [Int] -> Int
-findBestGuess s = num $ maximum [Cand gs (weightFunc (genRc s gs (replicate 14 0)) 0) | gs <- s]
+findBestGuess s = num $ minimum [Cand gs (weightFunc (genRc s gs (replicate 14 0)) 0) | gs <- s]
 
 -- generate response classes
 genRc :: [Int] -> Int -> [Int] -> [Int]
 genRc s gs r
   | s == [] = r
-  | otherwise = genRc (tail s) gs ((take index r) ++ [(r !! index)] ++ (drop (index + 1) r))
+  | otherwise = genRc (tail s) gs ((take index r) ++ [(r !! index) + 1] ++ (drop (index + 1) r))
   where index = getIndex (head s) gs
 
+-- get index for each result class
 getIndex :: Int -> Int -> Int
 getIndex a b
   | fst res <= 1 = (fst res) * 4 + snd res  
@@ -48,6 +52,7 @@ getIndex a b
   | fst res == 4 = 13
   where res = eval a b
 
+-- Lamouth weight function, can be changed according to different algorithms
 weightFunc :: [Int] -> Double -> Double
 weightFunc [] n = n
 weightFunc ns n 
