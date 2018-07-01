@@ -7,6 +7,7 @@ module Guess (
 
 import System.Random
 import Text.Printf
+import Data.List
 
 type GameState = ([Int], Int)
 type Result = (Int, Int)
@@ -32,32 +33,23 @@ guess g s = (snd s, s)
 refine :: (Int, GameState) -> (Int, Int) -> GameState
 refine (gs, s) (b, c) = (s', findBestGuess s') 
              where s' = [n | n <- fst s, eval n gs == (b, c)]
+
 -- find next one to guess
 findBestGuess :: [Int] -> Int
-findBestGuess s = num $ minimum [Cand gs (weightFunc (genRc s gs (replicate 14 0)) 0) | gs <- s]
-
--- generate response classes
-genRc :: [Int] -> Int -> [Int] -> [Int]
-genRc s gs r
-  | s == [] = r
-  | otherwise = genRc (tail s) gs ((take index r) ++ [(r !! index) + 1] ++ (drop (index + 1) r))
-  where index = getIndex (head s) gs
-
--- get index for each result class
-getIndex :: Int -> Int -> Int
-getIndex a b
-  | fst res <= 1 = (fst res) * 4 + snd res  
-  | fst res == 2 = (fst res) * 4 + snd res - 1
-  | fst res == 3 = 12
-  | fst res == 4 = 13
-  where res = eval a b
+findBestGuess s = num $ minimum [Cand gs (weightFunc s gs) | gs <- s]
 
 -- Lamouth weight function, can be changed according to different algorithms
-weightFunc :: [Int] -> Double -> Double
-weightFunc [] n = n
-weightFunc ns n 
-  | head ns == 0 = weightFunc (tail ns) n
-  | otherwise = weightFunc (tail ns) (n + t * (log t) - 2 * log 2) where t = fromIntegral $ head ns
+weightFunc :: [Int] -> Int -> Double
+weightFunc s gs = sum [fromIntegral t * log (fromIntegral t) - 2 * log 2 | t <- rc]
+                  where rc = [length t | t <- getIndexGroup s gs] 
+                  
+-- group index list
+getIndexGroup :: [Int] -> Int -> [[Int]]
+getIndexGroup s gs = group [getIndex gs mem | mem <- s]
+
+-- get distinct index for each result class
+getIndex :: Int -> Int -> Int
+getIndex a b = (fst res) * 5 + snd res where res = eval a b
 
 eval :: Int -> Int -> (Int, Int)
 eval e x = (appeared, inPosition) where
